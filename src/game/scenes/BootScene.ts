@@ -82,9 +82,15 @@ export default class BootScene extends Phaser.Scene {
     if (!existing) {
       localStorage.setItem('neonDashSave', JSON.stringify(defaultData));
     } else {
-      // Merge defaults with existing to handle new fields
-      const merged = { ...defaultData, ...JSON.parse(existing) };
-      localStorage.setItem('neonDashSave', JSON.stringify(merged));
+      try {
+        // Merge defaults with existing to handle new fields
+        const parsed = JSON.parse(existing);
+        const merged = { ...defaultData, ...(parsed && typeof parsed === 'object' ? parsed : {}) };
+        localStorage.setItem('neonDashSave', JSON.stringify(merged));
+      } catch {
+        // Recover from corrupted save data to avoid blocking scene startup
+        localStorage.setItem('neonDashSave', JSON.stringify(defaultData));
+      }
     }
   }
 }
