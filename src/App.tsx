@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { initGame } from './game/main';
 
 const MOBILE_BREAKPOINT = 900;
@@ -14,7 +14,7 @@ export default function App() {
   const resizeAnimationFrameRef = useRef(0);
   const [mobileLayout, setMobileLayout] = useState(() => isMobileLayout());
 
-  const destroyGame = () => {
+  const destroyGame = useCallback(() => {
     if (!gameRef.current) return;
 
     try {
@@ -22,7 +22,7 @@ export default function App() {
     } finally {
       gameRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,7 +37,7 @@ export default function App() {
       cancelAnimationFrame(resizeAnimationFrameRef.current);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [destroyGame]);
 
   useEffect(() => {
     if (mobileLayout) {
