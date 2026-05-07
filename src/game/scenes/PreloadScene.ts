@@ -14,6 +14,7 @@ export default class PreloadScene extends Phaser.Scene {
   private loadingText!: any;
   private progressBox!: any;
   private visualProgress = 0;
+  private isLoadComplete = false;
   private visualProgressTimer?: DestroyableTimer;
 
   constructor() {
@@ -27,14 +28,11 @@ export default class PreloadScene extends Phaser.Scene {
     
     // Track loading progress
     this.load.on('progress', (value: number) => {
+      if (this.isLoadComplete) return;
       this.visualProgress = Math.max(this.visualProgress, Math.floor(value * 100));
       this.updateVisualProgress();
     });
-    this.load.once('complete', () => {
-      this.stopVisualProgressTimer();
-      this.visualProgress = 100;
-      this.updateVisualProgress();
-    });
+    this.load.once('complete', () => this.markLoadComplete());
   }
 
   createLoadingUI() {
@@ -116,6 +114,7 @@ export default class PreloadScene extends Phaser.Scene {
       delay: VISUAL_PROGRESS_DELAY_MS,
       loop: true,
       callback: () => {
+        if (this.isLoadComplete) return;
         if (this.visualProgress < 99) {
           this.visualProgress += 1;
           this.updateVisualProgress();
@@ -135,6 +134,13 @@ export default class PreloadScene extends Phaser.Scene {
       this.visualProgressTimer.destroy();
       this.visualProgressTimer = undefined;
     }
+  }
+
+  markLoadComplete() {
+    this.isLoadComplete = true;
+    this.stopVisualProgressTimer();
+    this.visualProgress = 100;
+    this.updateVisualProgress();
   }
 
   spawnParticle(w: number, h: number) {
@@ -455,9 +461,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   create() {
-    this.stopVisualProgressTimer();
-    this.visualProgress = 100;
-    this.updateVisualProgress();
+    this.markLoadComplete();
     this.time.delayedCall(COMPLETION_DISPLAY_DELAY_MS, () => this.scene.start('MainMenuScene'));
   }
 }
