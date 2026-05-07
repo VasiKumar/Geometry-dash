@@ -30,6 +30,11 @@ export default class PreloadScene extends Phaser.Scene {
       this.visualProgress = Math.max(this.visualProgress, Math.floor(value * 100));
       this.updateVisualProgress();
     });
+    this.load.once('complete', () => {
+      this.stopVisualProgressTimer();
+      this.visualProgress = 100;
+      this.updateVisualProgress();
+    });
   }
 
   createLoadingUI() {
@@ -123,6 +128,13 @@ export default class PreloadScene extends Phaser.Scene {
     const pct = Phaser.Math.Clamp(this.visualProgress, 0, 100);
     this.loadingBar.scaleX = pct / 100;
     this.loadingText.setText(`Loading... ${pct}%`);
+  }
+
+  stopVisualProgressTimer() {
+    if (this.visualProgressTimer) {
+      this.visualProgressTimer.destroy();
+      this.visualProgressTimer = undefined;
+    }
   }
 
   spawnParticle(w: number, h: number) {
@@ -443,10 +455,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   create() {
-    if (this.visualProgressTimer) {
-      this.visualProgressTimer.destroy();
-      this.visualProgressTimer = undefined;
-    }
+    this.stopVisualProgressTimer();
     this.visualProgress = 100;
     this.updateVisualProgress();
     this.time.delayedCall(COMPLETION_DISPLAY_DELAY_MS, () => this.scene.start('MainMenuScene'));
