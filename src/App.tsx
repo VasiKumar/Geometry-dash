@@ -1,18 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { initGame } from './game/main';
 
-const MOBILE_BREAKPOINT = 900;
 const GAME_CONTAINER_ID = 'game-container';
-
-function isMobileLayout() {
-  return window.innerWidth < MOBILE_BREAKPOINT
-    || window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-}
 
 export default function App() {
   const gameRef = useRef<any>(null);
-  const resizeAnimationFrameRef = useRef(0);
-  const [mobileLayout, setMobileLayout] = useState(() => isMobileLayout());
 
   const destroyGame = useCallback(() => {
     if (!gameRef.current) return;
@@ -25,30 +17,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const handleResize = () => {
-      cancelAnimationFrame(resizeAnimationFrameRef.current);
-      resizeAnimationFrameRef.current = window.requestAnimationFrame(() => {
-        setMobileLayout(isMobileLayout());
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      cancelAnimationFrame(resizeAnimationFrameRef.current);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [destroyGame]);
-
-  useEffect(() => {
-    if (mobileLayout) {
-      destroyGame();
-      return;
-    }
-
     if (!gameRef.current && document.getElementById(GAME_CONTAINER_ID)) {
       gameRef.current = initGame(GAME_CONTAINER_ID);
     }
-  }, [mobileLayout]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -57,33 +29,12 @@ export default function App() {
   }, []);
 
   return (
-    <main className={`app-shell${mobileLayout ? ' app-shell--mobile' : ''}`}>
+    <main className="app-shell">
       <div className="app-shell__backdrop" />
-
-      {mobileLayout ? (
-        <section className="mobile-card">
-          <p className="mobile-card__eyebrow">Desktop experience</p>
-          <h1 className="mobile-card__title">NeonDash</h1>
-          <p className="mobile-card__description">
-            This game is tuned for a larger screen with keyboard or mouse controls.
-          </p>
-          <div className="mobile-card__tips">
-            <span>Best on desktop or laptop</span>
-            <span>Space / Click to jump</span>
-            <span>Esc / P to pause</span>
-          </div>
-          <p className="mobile-card__footer">
-            On mobile, the gameplay is disabled so the UI stays readable and easy to use.
-          </p>
-        </section>
-      ) : (
-        <>
-          <div className="game-shell">
-            <div id={GAME_CONTAINER_ID} className="game-shell__container" />
-          </div>
-          <div className="desktop-hint">Space / Click to jump · Esc / P to pause</div>
-        </>
-      )}
+      <div className="game-shell">
+        <div id={GAME_CONTAINER_ID} className="game-shell__container" />
+      </div>
+      <div className="desktop-hint">Space / Click / Tap to jump · Esc / P / Pause button</div>
     </main>
   );
 }

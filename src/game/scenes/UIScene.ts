@@ -109,6 +109,21 @@ export default class UIScene extends Phaser.Scene {
       color: diffColor,
     }).setOrigin(1, 0);
 
+    // ── Pause button (desktop + mobile) ──
+    const pauseBtn = this.add.text(w - 20, 90, '⏸ PAUSE', {
+      fontSize: '12px',
+      fontFamily: 'Arial Black',
+      color: '#66ccff',
+      backgroundColor: '#001122'
+    }).setOrigin(1, 0).setPadding(8, 4, 8, 4).setInteractive({ useHandCursor: true });
+
+    pauseBtn.on('pointerover', () => pauseBtn.setColor('#ffffff'));
+    pauseBtn.on('pointerout', () => pauseBtn.setColor('#66ccff'));
+    pauseBtn.on('pointerdown', () => {
+      const gameScene = this.scene.get('GameScene') as any;
+      gameScene.togglePause();
+    });
+
     // ── BPM indicator ──
     this.add.text(w / 2, barY + 34, `♪ ${this.levelConfig?.bpm || 0} BPM`, {
       fontSize: '11px',
