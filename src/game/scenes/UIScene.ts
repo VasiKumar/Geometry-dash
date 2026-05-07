@@ -123,10 +123,7 @@ export default class UIScene extends Phaser.Scene {
 
     pauseBtn.on('pointerover', () => pauseBtn.setColor('#ffffff'));
     pauseBtn.on('pointerout', () => pauseBtn.setColor('#66ccff'));
-    pauseBtn.on('pointerdown', () => {
-      const gameScene = this.scene.get('GameScene') as { togglePause?: () => void };
-      gameScene.togglePause?.();
-    });
+    pauseBtn.on('pointerdown', () => this.triggerPauseToggle());
 
     // ── BPM indicator ──
     this.add.text(w / 2, barY + 34, `♪ ${this.levelConfig?.bpm || 0} BPM`, {
@@ -268,8 +265,7 @@ export default class UIScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const resumeBtn = this.createPauseBtn(0, -40, '▶  RESUME', '#00ff88', () => {
-      const gameScene = this.scene.get('GameScene') as { togglePause?: () => void };
-      gameScene.togglePause?.();
+      this.triggerPauseToggle();
     });
 
     const restartBtn = this.createPauseBtn(0, 30, '↩  RESTART', '#ffaa00', () => {
@@ -326,6 +322,17 @@ export default class UIScene extends Phaser.Scene {
     zone.on('pointerdown', callback);
 
     return [bg, text, zone];
+  }
+
+  triggerPauseToggle() {
+    const gameScene = this.scene.get('GameScene') as { togglePause?: () => void };
+
+    if (typeof gameScene.togglePause === 'function') {
+      gameScene.togglePause();
+      return;
+    }
+
+    console.warn('UIScene: GameScene.togglePause is unavailable.');
   }
 
   showPauseMenu() {
