@@ -20,6 +20,8 @@ html, body {
 .app-shell {
   position: relative;
   display: flex;
+  flex-direction: column;
+  gap: 16px;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -47,8 +49,10 @@ html, body {
 .game-shell {
   position: relative;
   z-index: 1;
-  width: min(100%, 1600px);
+  width: min(100%, 1600px, calc((100dvh - 64px) * 16 / 9));
+  max-height: calc(100dvh - 64px);
   aspect-ratio: 16 / 9;
+  flex-shrink: 1;
   border: 1px solid rgba(0, 255, 255, 0.24);
   border-radius: 24px;
   overflow: hidden;
@@ -63,9 +67,7 @@ html, body {
 }
 
 .desktop-hint {
-  position: absolute;
-  right: 32px;
-  bottom: 24px;
+  position: relative;
   z-index: 1;
   padding: 10px 14px;
   border: 1px solid rgba(0, 255, 255, 0.18);
@@ -75,6 +77,49 @@ html, body {
   font-family: Arial, sans-serif;
   font-size: 12px;
   letter-spacing: 0.08em;
+}
+
+.mobile-status {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: min(100%, 720px);
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 255, 255, 0.18);
+  border-radius: 18px;
+  background: rgba(0, 8, 24, 0.88);
+  color: #dff6ff;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.mobile-status__message {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.mobile-action {
+  border: 1px solid rgba(0, 255, 255, 0.28);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.18), rgba(0, 136, 255, 0.22));
+  color: #ffffff;
+  font-family: Arial Black, Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mobile-action:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.28), rgba(0, 136, 255, 0.34));
 }
 
 .mobile-card {
@@ -142,6 +187,42 @@ html, body {
   overflow-y: auto;
 }
 
+.app-shell--phone {
+  gap: 12px;
+  padding: 16px;
+}
+
+.game-shell--dimmed {
+  opacity: 0.32;
+  filter: saturate(0.7);
+}
+
+.mobile-rotate-overlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+}
+
+.mobile-landscape-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  z-index: 2;
+  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 460px);
+  padding: 10px 14px;
+  border: 1px solid rgba(0, 255, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(0, 8, 24, 0.82);
+  color: #bfe9ff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
 canvas {
   display: block !important;
   outline: none;
@@ -177,13 +258,24 @@ canvas {
   }
 
   .desktop-hint {
-    right: 16px;
-    bottom: 16px;
     max-width: calc(100% - 32px);
     text-align: center;
   }
 
   .game-shell {
     border-radius: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-shell {
+    width: min(100%, calc((100dvh - 56px) * 16 / 9));
+    max-height: calc(100dvh - 56px);
+    border-radius: 16px;
+  }
+
+  .mobile-card {
+    width: min(100%, 440px);
+    padding: 24px 20px;
   }
 }
