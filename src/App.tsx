@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { initGame } from './game/main';
 
 const MOBILE_BREAKPOINT = 900;
+const GAME_CONTAINER_ID = 'game-container';
 
 function isMobileLayout() {
   return window.innerWidth < MOBILE_BREAKPOINT
@@ -13,17 +14,17 @@ export default function App() {
   const [mobileLayout, setMobileLayout] = useState(() => isMobileLayout());
 
   useEffect(() => {
-    let frameId = 0;
+    let resizeAnimationFrameId = 0;
     const handleResize = () => {
-      cancelAnimationFrame(frameId);
-      frameId = window.requestAnimationFrame(() => {
+      cancelAnimationFrame(resizeAnimationFrameId);
+      resizeAnimationFrameId = window.requestAnimationFrame(() => {
         setMobileLayout(isMobileLayout());
       });
     };
 
     window.addEventListener('resize', handleResize);
     return () => {
-      cancelAnimationFrame(frameId);
+      cancelAnimationFrame(resizeAnimationFrameId);
       window.removeEventListener('resize', handleResize);
     };
   }, []);
@@ -37,8 +38,8 @@ export default function App() {
       return;
     }
 
-    if (!gameRef.current && document.getElementById('game-container')) {
-      gameRef.current = initGame('game-container');
+    if (!gameRef.current && document.getElementById(GAME_CONTAINER_ID)) {
+      gameRef.current = initGame(GAME_CONTAINER_ID);
     }
   }, [mobileLayout]);
 
@@ -74,7 +75,7 @@ export default function App() {
       ) : (
         <>
           <div className="game-shell">
-            <div id="game-container" className="game-shell__container" />
+            <div id={GAME_CONTAINER_ID} className="game-shell__container" />
           </div>
           <div className="desktop-hint">Space / Click to jump · Esc / P to pause</div>
         </>
