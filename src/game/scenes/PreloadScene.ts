@@ -137,6 +137,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   markLoadComplete() {
+    if (this.isLoadComplete) return;
     this.isLoadComplete = true;
     this.stopVisualProgressTimer();
     this.visualProgress = 100;
