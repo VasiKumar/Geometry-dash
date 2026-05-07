@@ -13,10 +13,19 @@ export default function App() {
   const [mobileLayout, setMobileLayout] = useState(() => isMobileLayout());
 
   useEffect(() => {
-    const handleResize = () => setMobileLayout(isMobileLayout());
+    let frameId = 0;
+    const handleResize = () => {
+      cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(() => {
+        setMobileLayout(isMobileLayout());
+      });
+    };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -28,7 +37,7 @@ export default function App() {
       return;
     }
 
-    if (!gameRef.current) {
+    if (!gameRef.current && document.getElementById('game-container')) {
       gameRef.current = initGame('game-container');
     }
   }, [mobileLayout]);
