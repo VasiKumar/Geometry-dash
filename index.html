@@ -9,27 +9,13 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
         background: #000;
-        overflow: hidden;
         font-family: 'Arial', sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100vw;
-        height: 100vh;
-      }
-      #game-container {
-        position: relative;
         width: 100%;
-        height: 100%;
-      }
-      canvas {
-        display: block;
-        margin: 0 auto;
+        min-height: 100vh;
       }
     </style>
   </head>
   <body>
-    <div id="game-container"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
