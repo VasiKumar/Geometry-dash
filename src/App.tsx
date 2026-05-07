@@ -11,30 +11,37 @@ function isMobileLayout() {
 
 export default function App() {
   const gameRef = useRef<any>(null);
+  const resizeAnimationFrameRef = useRef(0);
   const [mobileLayout, setMobileLayout] = useState(() => isMobileLayout());
 
+  const destroyGame = () => {
+    if (!gameRef.current) return;
+
+    try {
+      gameRef.current.destroy(true);
+    } finally {
+      gameRef.current = null;
+    }
+  };
+
   useEffect(() => {
-    let resizeAnimationFrameId = 0;
     const handleResize = () => {
-      cancelAnimationFrame(resizeAnimationFrameId);
-      resizeAnimationFrameId = window.requestAnimationFrame(() => {
+      cancelAnimationFrame(resizeAnimationFrameRef.current);
+      resizeAnimationFrameRef.current = window.requestAnimationFrame(() => {
         setMobileLayout(isMobileLayout());
       });
     };
 
     window.addEventListener('resize', handleResize);
     return () => {
-      cancelAnimationFrame(resizeAnimationFrameId);
+      cancelAnimationFrame(resizeAnimationFrameRef.current);
       window.removeEventListener('resize', handleResize);
     };
   }, []);
 
   useEffect(() => {
     if (mobileLayout) {
-      if (gameRef.current) {
-        gameRef.current.destroy(true);
-        gameRef.current = null;
-      }
+      destroyGame();
       return;
     }
 
@@ -45,10 +52,7 @@ export default function App() {
 
   useEffect(() => {
     return () => {
-      if (gameRef.current) {
-        gameRef.current.destroy(true);
-        gameRef.current = null;
-      }
+      destroyGame();
     };
   }, []);
 
