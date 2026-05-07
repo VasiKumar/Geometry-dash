@@ -59,6 +59,7 @@ html, body {
 .game-shell__container {
   position: absolute;
   inset: 0;
+  touch-action: none;
 }
 
 .desktop-hint {
@@ -146,6 +147,7 @@ canvas {
   outline: none;
   width: 100%;
   height: 100%;
+  touch-action: none;
 }
 
 /* Prevent text selection */
