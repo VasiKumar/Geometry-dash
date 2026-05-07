@@ -8,6 +8,7 @@ export default function App() {
   const [isPhone, setIsPhone] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState('');
 
   const syncViewportState = useCallback(() => {
     const hasTouchInput =
@@ -58,13 +59,20 @@ export default function App() {
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
+        setFullscreenError('');
       } else if (page.requestFullscreen) {
         await page.requestFullscreen();
+        setFullscreenError('');
       } else {
-        await page.webkitRequestFullscreen?.();
+        if (page.webkitRequestFullscreen) {
+          await page.webkitRequestFullscreen();
+          setFullscreenError('');
+        } else {
+          setFullscreenError('Fullscreen is not available on this phone browser.');
+        }
       }
     } catch {
-      // Ignore fullscreen failures to avoid blocking gameplay.
+      setFullscreenError('Fullscreen could not start. You can still play directly on your phone.');
     } finally {
       syncViewportState();
     }
@@ -72,21 +80,31 @@ export default function App() {
 
   const showRotatePrompt = isPhone && isPortrait;
   const showPhoneControls = isPhone && !isPortrait;
+  const appShellClassName = [
+    'app-shell',
+    isPhone ? 'app-shell--phone' : '',
+    showRotatePrompt ? 'app-shell--mobile' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const gameShellClassName = ['game-shell', showRotatePrompt ? 'game-shell--dimmed' : '']
+    .filter(Boolean)
+    .join(' ');
+  const mobileStatusMessage = showRotatePrompt
+    ? 'Turn your phone sideways to play.'
+    : 'Tap anywhere to jump. Use the pause button anytime.';
 
   return (
-    <main className={`app-shell${isPhone ? ' app-shell--phone' : ''}${showRotatePrompt ? ' app-shell--mobile' : ''}`}>
+    <main className={appShellClassName}>
       <div className="app-shell__backdrop" />
-      <div className={`game-shell${showRotatePrompt ? ' game-shell--dimmed' : ''}`}>
+      <div className={gameShellClassName}>
         <div id={GAME_CONTAINER_ID} className="game-shell__container" />
       </div>
 
       {isPhone ? (
         <div className="mobile-status" role="status" aria-live="polite">
-          <span className="mobile-status__message">
-            {showRotatePrompt
-              ? 'Turn your phone sideways to play.'
-              : 'Tap anywhere to jump. Use the pause button anytime.'}
-          </span>
+          <span className="mobile-status__message">{mobileStatusMessage}</span>
+          {fullscreenError && <span className="mobile-status__detail">{fullscreenError}</span>}
           {!isFullscreen && (
             <button type="button" className="mobile-action" onClick={handleFullscreen}>
               Fullscreen
