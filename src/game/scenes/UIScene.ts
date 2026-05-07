@@ -45,6 +45,10 @@ export default class UIScene extends Phaser.Scene {
   }
 
   createHUD(w: number, h: number) {
+    const uiRightMargin = 20;
+    const pauseButtonTop = 90;
+    const pauseButtonPaddingX = 8;
+    const pauseButtonPaddingY = 4;
     const color1 = this.levelConfig?.color1 || '#00ffff';
     const colInt = Phaser.Display.Color.HexStringToColor(color1).color;
 
@@ -94,7 +98,7 @@ export default class UIScene extends Phaser.Scene {
     });
 
     // ── Level Name ──
-    this.levelNameText = this.add.text(w - 20, 45, `Level ${this.levelId}: ${this.levelConfig?.name || ''}`, {
+    this.levelNameText = this.add.text(w - uiRightMargin, 45, `Level ${this.levelId}: ${this.levelConfig?.name || ''}`, {
       fontSize: '14px',
       fontFamily: 'Arial Black',
       color: color1,
@@ -103,25 +107,25 @@ export default class UIScene extends Phaser.Scene {
 
     // ── Difficulty badge ──
     const diffColor = this.levelConfig?.diffColor || '#ffffff';
-    this.difficultyText = this.add.text(w - 20, 65, this.levelConfig?.difficulty || '', {
+    this.difficultyText = this.add.text(w - uiRightMargin, 65, this.levelConfig?.difficulty || '', {
       fontSize: '12px',
       fontFamily: 'Arial Black',
       color: diffColor,
     }).setOrigin(1, 0);
 
     // ── Pause button (desktop + mobile) ──
-    const pauseBtn = this.add.text(w - 20, 90, '⏸ PAUSE', {
+    const pauseBtn = this.add.text(w - uiRightMargin, pauseButtonTop, '⏸ PAUSE', {
       fontSize: '12px',
       fontFamily: 'Arial Black',
       color: '#66ccff',
       backgroundColor: '#001122'
-    }).setOrigin(1, 0).setPadding(8, 4, 8, 4).setInteractive({ useHandCursor: true });
+    }).setOrigin(1, 0).setPadding(pauseButtonPaddingX, pauseButtonPaddingY, pauseButtonPaddingX, pauseButtonPaddingY).setInteractive({ useHandCursor: true });
 
     pauseBtn.on('pointerover', () => pauseBtn.setColor('#ffffff'));
     pauseBtn.on('pointerout', () => pauseBtn.setColor('#66ccff'));
     pauseBtn.on('pointerdown', () => {
-      const gameScene = this.scene.get('GameScene') as any;
-      gameScene.togglePause();
+      const gameScene = this.scene.get('GameScene') as { togglePause?: () => void };
+      gameScene.togglePause?.();
     });
 
     // ── BPM indicator ──
@@ -133,7 +137,7 @@ export default class UIScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // ── Pause hint ──
-    this.add.text(w - 20, h - 20, 'ESC / P = Pause', {
+    this.add.text(w - uiRightMargin, h - 20, 'ESC / P = Pause', {
       fontSize: '11px',
       fontFamily: 'Arial',
       color: '#334455'
@@ -264,8 +268,8 @@ export default class UIScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const resumeBtn = this.createPauseBtn(0, -40, '▶  RESUME', '#00ff88', () => {
-      const gameScene = this.scene.get('GameScene') as any;
-      gameScene.togglePause();
+      const gameScene = this.scene.get('GameScene') as { togglePause?: () => void };
+      gameScene.togglePause?.();
     });
 
     const restartBtn = this.createPauseBtn(0, 30, '↩  RESTART', '#ffaa00', () => {
