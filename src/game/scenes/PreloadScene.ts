@@ -2,13 +2,19 @@
 // PreloadScene - Generates all procedural game assets
 // ============================================================
 declare const Phaser: any;
+const VISUAL_PROGRESS_DELAY_MS = 35;
+const COMPLETION_DISPLAY_DELAY_MS = 250;
+
+type DestroyableTimer = {
+  destroy: () => void;
+};
 
 export default class PreloadScene extends Phaser.Scene {
   private loadingBar!: any;
   private loadingText!: any;
   private progressBox!: any;
   private visualProgress = 0;
-  private visualProgressTimer?: any;
+  private visualProgressTimer?: DestroyableTimer;
 
   constructor() {
     super({ key: 'PreloadScene' });
@@ -102,7 +108,7 @@ export default class PreloadScene extends Phaser.Scene {
   startVisualProgress() {
     this.visualProgress = 0;
     this.visualProgressTimer = this.time.addEvent({
-      delay: 35,
+      delay: VISUAL_PROGRESS_DELAY_MS,
       loop: true,
       callback: () => {
         if (this.visualProgress < 99) {
@@ -443,6 +449,6 @@ export default class PreloadScene extends Phaser.Scene {
     }
     this.visualProgress = 100;
     this.updateVisualProgress();
-    this.time.delayedCall(250, () => this.scene.start('MainMenuScene'));
+    this.time.delayedCall(COMPLETION_DISPLAY_DELAY_MS, () => this.scene.start('MainMenuScene'));
   }
 }
