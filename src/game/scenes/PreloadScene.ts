@@ -7,6 +7,8 @@ export default class PreloadScene extends Phaser.Scene {
   private loadingBar!: any;
   private loadingText!: any;
   private progressBox!: any;
+  private visualProgress = 0;
+  private visualProgressTimer?: any;
 
   constructor() {
     super({ key: 'PreloadScene' });
@@ -14,12 +16,13 @@ export default class PreloadScene extends Phaser.Scene {
 
   preload() {
     this.createLoadingUI();
+    this.startVisualProgress();
     this.generateTextures();
     
     // Track loading progress
     this.load.on('progress', (value: number) => {
-      this.loadingBar.scaleX = value;
-      this.loadingText.setText(`Loading... ${Math.floor(value * 100)}%`);
+      this.visualProgress = Math.max(this.visualProgress, Math.floor(value * 100));
+      this.updateVisualProgress();
     });
   }
 
@@ -82,7 +85,6 @@ export default class PreloadScene extends Phaser.Scene {
     this.loadingBar = this.add.graphics();
     this.loadingBar.fillGradientStyle(0x00ffff, 0xff00ff, 0x00ffff, 0xff00ff, 1);
     this.loadingBar.fillRect(cx - 256, cy + 34, 512, 22);
-    this.loadingBar.setOrigin(0, 0);
     this.loadingBar.scaleX = 0;
 
     this.loadingText = this.add.text(cx, cy + 80, 'Loading... 0%', {
@@ -95,6 +97,26 @@ export default class PreloadScene extends Phaser.Scene {
     for (let i = 0; i < 20; i++) {
       this.time.delayedCall(i * 150, () => this.spawnParticle(width, height));
     }
+  }
+
+  startVisualProgress() {
+    this.visualProgress = 0;
+    this.visualProgressTimer = this.time.addEvent({
+      delay: 35,
+      loop: true,
+      callback: () => {
+        if (this.visualProgress < 99) {
+          this.visualProgress += 1;
+          this.updateVisualProgress();
+        }
+      }
+    });
+  }
+
+  updateVisualProgress() {
+    const pct = Phaser.Math.Clamp(this.visualProgress, 0, 100);
+    this.loadingBar.scaleX = pct / 100;
+    this.loadingText.setText(`Loading... ${pct}%`);
   }
 
   spawnParticle(w: number, h: number) {
@@ -415,6 +437,12 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('MainMenuScene');
+    if (this.visualProgressTimer) {
+      this.visualProgressTimer.destroy();
+      this.visualProgressTimer = undefined;
+    }
+    this.visualProgress = 100;
+    this.updateVisualProgress();
+    this.time.delayedCall(250, () => this.scene.start('MainMenuScene'));
   }
 }
