@@ -2,11 +2,20 @@
 // PreloadScene - Generates all procedural game assets
 // ============================================================
 declare const Phaser: any;
+const VISUAL_PROGRESS_DELAY_MS = 35;
+const COMPLETION_DISPLAY_DELAY_MS = 250;
+
+type DestroyableTimer = {
+  destroy: () => void;
+};
 
 export default class PreloadScene extends Phaser.Scene {
   private loadingBar!: any;
   private loadingText!: any;
   private progressBox!: any;
+  private visualProgress = 0;
+  private isLoadComplete = false;
+  private visualProgressTimer?: DestroyableTimer;
 
   constructor() {
     super({ key: 'PreloadScene' });
@@ -14,13 +23,16 @@ export default class PreloadScene extends Phaser.Scene {
 
   preload() {
     this.createLoadingUI();
+    this.startVisualProgress();
     this.generateTextures();
     
     // Track loading progress
     this.load.on('progress', (value: number) => {
-      this.loadingBar.scaleX = value;
-      this.loadingText.setText(`Loading... ${Math.floor(value * 100)}%`);
+      if (this.isLoadComplete) return;
+      this.visualProgress = Math.max(this.visualProgress, Math.floor(value * 100));
+      this.updateVisualProgress();
     });
+    this.load.once('complete', () => this.markLoadComplete());
   }
 
   createLoadingUI() {
@@ -82,7 +94,6 @@ export default class PreloadScene extends Phaser.Scene {
     this.loadingBar = this.add.graphics();
     this.loadingBar.fillGradientStyle(0x00ffff, 0xff00ff, 0x00ffff, 0xff00ff, 1);
     this.loadingBar.fillRect(cx - 256, cy + 34, 512, 22);
-    this.loadingBar.setOrigin(0, 0);
     this.loadingBar.scaleX = 0;
 
     this.loadingText = this.add.text(cx, cy + 80, 'Loading... 0%', {
@@ -95,6 +106,42 @@ export default class PreloadScene extends Phaser.Scene {
     for (let i = 0; i < 20; i++) {
       this.time.delayedCall(i * 150, () => this.spawnParticle(width, height));
     }
+  }
+
+  startVisualProgress() {
+    this.visualProgress = 0;
+    this.visualProgressTimer = this.time.addEvent({
+      delay: VISUAL_PROGRESS_DELAY_MS,
+      loop: true,
+      callback: () => {
+        if (this.isLoadComplete) return;
+        if (this.visualProgress < 99) {
+          this.visualProgress += 1;
+          this.updateVisualProgress();
+        }
+      }
+    });
+  }
+
+  updateVisualProgress() {
+    const pct = Phaser.Math.Clamp(this.visualProgress, 0, 100);
+    this.loadingBar.scaleX = pct / 100;
+    this.loadingText.setText(`Loading... ${pct}%`);
+  }
+
+  stopVisualProgressTimer() {
+    if (this.visualProgressTimer) {
+      this.visualProgressTimer.destroy();
+      this.visualProgressTimer = undefined;
+    }
+  }
+
+  markLoadComplete() {
+    if (this.isLoadComplete) return;
+    this.isLoadComplete = true;
+    this.stopVisualProgressTimer();
+    this.visualProgress = 100;
+    this.updateVisualProgress();
   }
 
   spawnParticle(w: number, h: number) {
@@ -415,6 +462,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('MainMenuScene');
+    this.markLoadComplete();
+    this.time.delayedCall(COMPLETION_DISPLAY_DELAY_MS, () => this.scene.start('MainMenuScene'));
   }
 }
